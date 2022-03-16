@@ -23,9 +23,9 @@ router.post("/signup", async (req, res, next) => {
 
 router.get("/login", (req, res) => {
     res.render("login");
-  });
+});
 
-router.post("/login", async(req, res) =>{
+router.post("/login", async (req, res) => {
     try {
         console.log(req.body);
         const user = await UserModel.findOne({ username: req.body.username });
@@ -34,15 +34,20 @@ router.post("/login", async(req, res) =>{
         const passwordCorrect = await bcrypt.compare(req.body.password, hashFromDb);
         console.log(passwordCorrect ? "Yes" : "No");
         if (!passwordCorrect) {
-          throw Error("Password incorrect");
+            throw Error("Password incorrect");
         }
         res.redirect("/profile");
-      } catch (err) {
+        req.session.currentUser = user;
+    } catch (err) {
         res.render("login", { error: "Wrong username or password" });
-      }
+    }
+});
+
+router.post("/logout", (req, res) => {
+    req.session.destroy((err) => {
+        if (err) return next(err);
+        res.redirect("/login");
     });
-
-
-
+});
 
 module.exports = router;
